@@ -23,6 +23,7 @@
 - [Performance Optimization](#performance-optimization)
 - [SQL Dialect Differences](#sql-dialect-differences)
 - [Command Line Tools](#command-line-tools)
+- [Vim SQL Tips](#vim-sql-tips)
 
 ## Basic SQL Commands
 
@@ -943,4 +944,49 @@ SOURCE file_name.sql;
 
 # Exit
 EXIT;
+```
+
+## Vim SQL Tips
+
+### Basic Vim SQL Navigation
+```
+:set syntax=sql              # Set SQL syntax highlighting
+:%s/\<select\>/SELECT/gi     # Convert all SELECT statements to uppercase
+:g/^$/d                      # Remove empty lines
+:g/^\s*--/d                  # Remove SQL comments
+```
+
+### Vim SQL Formatting
+```
+# Format SQL (using external tool)
+:%!sqlformat --reindent --keywords upper --identifiers lower -
+```
+
+### SQL Vim Plugins
+- **vim-sql-syntax**: Enhanced SQL syntax highlighting
+- **vim-sqlutilities**: SQL formatting and utility functions
+- **SQLComplete**: SQL auto-completion
+- **vim-dadbod**: Database interaction from Vim
+
+### Vim-specific SQL Editing Commands
+```
+# Navigate between SQL statements
+:set iskeyword+=.           # Make . part of a word for SQL navigation
+:set iskeyword-=,           # Make , a word separator for SQL navigation
+
+# SQL folding
+:set foldmethod=indent      # Fold SQL by indentation levels
+:set foldmethod=marker      # Use -- {{{ and -- }}} as fold markers
+
+# Execute current SQL statement
+:.,/;/w !psql -d database   # Execute from current line to next semicolon
+```
+
+### Common Vim/SQL Macros
+```
+# Record a macro to uppercase a SQL keyword
+qa0viwU<Esc>q
+
+# Apply macro to all SQL keywords in file
+:%s/\<\(select\|from\|where\|group by\|order by\|having\|join\)\>/\U&/gi
 ```
