@@ -37,6 +37,7 @@ A comprehensive collection of cheatsheets for various development tools, technol
 - [Vagrant](vagrant.md)
 - [SSH](ssh.md)
 - [Helm](helm.md)
+- [Packer](packer.md)
 
 ### Databases
 - [PostgreSQL](postgresql.md)
