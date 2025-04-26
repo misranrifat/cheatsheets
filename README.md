@@ -6,40 +6,40 @@ A comprehensive collection of cheatsheets for various development tools, technol
 
 ### Programming Languages & Frameworks
 - **Java**
-  - Collections Framework
-  - Maven & Gradle
-  - Object-Oriented Programming
-  - Playwright
-  - REST Assured
-  - Selenium
-  - Spring Boot
-  - Stream API
-  - Version Management
+  - [Collections Framework](java-collections.md)
+  - [Maven & Gradle](java-maven-gradle.md)
+  - [Object-Oriented Programming](java-oop.md)
+  - [Playwright](java-playwright.md)
+  - [REST Assured](java-rest-assured.md)
+  - [Selenium](java-selenium.md)
+  - [Spring Boot](java-spring-boot.md)
+  - [Stream API](java-stream-api.md)
+  - [Version Management](java-versions.md)
 
 - **Python**
-  - Behave (Behavior-Driven Development)
-  - NumPy
-  - Pandas
-  - Playwright
-  - PySpark
-  - PyTorch
+  - [Behave (Behavior-Driven Development)](python-behave.md)
+  - [NumPy](python-numpy.md)
+  - [Pandas](python-pandas.md)
+  - [Playwright](python-playwright.md)
+  - [PySpark](python-pyspark.md)
+  - [PyTorch](python-pytorch.md)
 
 ### DevOps & Cloud
-- AWS CLI
-- Docker
-- Homebrew
+- [AWS CLI](aws-cli.md)
+- [Docker](docker.md)
+- [Homebrew](homebrew.md)
 
 ### Databases
-- PostgreSQL
+- [PostgreSQL](postgresql.md)
 
 ### Development Tools
-- Linux
-- Nano
-- Vim
+- [Linux](linux.md)
+- [Nano](nano.md)
+- [Vim](vim.md)
 
 ### Testing & Automation
-- Cypress
-- OCR
+- [Cypress](cypress.md)
+- [OCR](ocr.md)
 
 ## Usage
 
