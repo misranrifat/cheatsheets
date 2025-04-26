@@ -177,7 +177,7 @@ aws ec2 release-address --allocation-id eipalloc-12345678
 
 ## S3 Commands
 
-### Buckets
+### Basic Bucket Operations
 ```bash
 # List all buckets
 aws s3 ls
@@ -185,35 +185,251 @@ aws s3 ls
 # Create a bucket
 aws s3 mb s3://mybucket
 
-# Delete a bucket
+# Create a bucket in a specific region
+aws s3 mb s3://mybucket --region us-west-2
+
+# Delete an empty bucket
 aws s3 rb s3://mybucket
 
 # Delete a non-empty bucket
 aws s3 rb s3://mybucket --force
 ```
 
-### Objects
+### Object Operations
 ```bash
 # List objects in a bucket
 aws s3 ls s3://mybucket
 
+# List objects with details (size, date, etc.)
+aws s3 ls s3://mybucket --human-readable --summarize
+
+# List objects recursively (including in subdirectories)
+aws s3 ls s3://mybucket --recursive
+
 # Upload a file
 aws s3 cp myfile.txt s3://mybucket/
+
+# Upload a file with specific storage class
+aws s3 cp myfile.txt s3://mybucket/ --storage-class GLACIER
+
+# Upload with public read access
+aws s3 cp myfile.txt s3://mybucket/ --acl public-read
 
 # Download a file
 aws s3 cp s3://mybucket/myfile.txt ./
 
-# Sync local directory to bucket
+# Copy object between buckets
+aws s3 cp s3://sourcebucket/myfile.txt s3://destbucket/
+
+# Move a file (copy then delete source)
+aws s3 mv myfile.txt s3://mybucket/
+
+# Move objects between buckets
+aws s3 mv s3://sourcebucket/myfile.txt s3://destbucket/
+```
+
+### Directory Operations
+```bash
+# Sync local directory to bucket (uploads new/changed files)
 aws s3 sync ./local-dir s3://mybucket/remote-dir
+
+# Sync with delete (removes files in destination not in source)
+aws s3 sync ./local-dir s3://mybucket/remote-dir --delete
 
 # Sync bucket to local directory
 aws s3 sync s3://mybucket/remote-dir ./local-dir
 
+# Sync between buckets
+aws s3 sync s3://sourcebucket/dir s3://destbucket/dir
+
+# Sync with exclusions
+aws s3 sync ./local-dir s3://mybucket/remote-dir --exclude "*.tmp" --exclude "*.log"
+
+# Sync with inclusions only
+aws s3 sync ./local-dir s3://mybucket/remote-dir --include "*.jpg" --exclude "*"
+```
+
+### Object Removal
+```bash
 # Remove an object
 aws s3 rm s3://mybucket/myfile.txt
 
 # Remove all objects in a bucket
 aws s3 rm s3://mybucket --recursive
+
+# Remove objects matching a prefix
+aws s3 rm s3://mybucket/logs/ --recursive
+
+# Remove objects with exclude/include patterns
+aws s3 rm s3://mybucket/ --recursive --exclude "*" --include "*.tmp"
+
+# Dry run (preview what would be deleted)
+aws s3 rm s3://mybucket/logs/ --recursive --dryrun
+```
+
+### Advanced S3 API Commands
+
+#### Bucket Configuration
+```bash
+# Get bucket location
+aws s3api get-bucket-location --bucket mybucket
+
+# Enable versioning
+aws s3api put-bucket-versioning --bucket mybucket --versioning-configuration Status=Enabled
+
+# Enable bucket logging
+aws s3api put-bucket-logging --bucket mybucket --bucket-logging-status file://logging.json
+
+# Configure CORS
+aws s3api put-bucket-cors --bucket mybucket --cors-configuration file://cors.json
+
+# Configure lifecycle rules
+aws s3api put-bucket-lifecycle-configuration --bucket mybucket --lifecycle-configuration file://lifecycle.json
+
+# Set public access block configuration
+aws s3api put-public-access-block --bucket mybucket --public-access-block-configuration file://public-block.json
+```
+
+#### Object Management with S3 API
+```bash
+# Get object metadata
+aws s3api head-object --bucket mybucket --key myfile.txt
+
+# Put object with metadata
+aws s3api put-object --bucket mybucket --key myfile.txt --body myfile.txt --metadata '{"key1":"value1","key2":"value2"}'
+
+# Upload a large file in parts (multipart upload)
+# 1. Initiate
+aws s3api create-multipart-upload --bucket mybucket --key largefile.zip
+
+# 2. Upload parts (repeat for each part)
+aws s3api upload-part --bucket mybucket --key largefile.zip --part-number 1 --body part1 --upload-id uploadID
+
+# 3. Complete multipart upload
+aws s3api complete-multipart-upload --bucket mybucket --key largefile.zip --upload-id uploadID --multipart-upload file://parts.json
+
+# List object versions
+aws s3api list-object-versions --bucket mybucket --prefix myfile.txt
+
+# Restore object from Glacier
+aws s3api restore-object --bucket mybucket --key myfile.txt --restore-request '{"Days":30,"GlacierJobParameters":{"Tier":"Standard"}}'
+```
+
+#### Bucket and Object Permissions
+```bash
+# Get bucket ACL
+aws s3api get-bucket-acl --bucket mybucket
+
+# Set bucket ACL
+aws s3api put-bucket-acl --bucket mybucket --acl private
+
+# Get object ACL
+aws s3api get-object-acl --bucket mybucket --key myfile.txt
+
+# Set object ACL
+aws s3api put-object-acl --bucket mybucket --key myfile.txt --acl public-read
+
+# Set custom ACL
+aws s3api put-object-acl --bucket mybucket --key myfile.txt --access-control-policy file://acl.json
+```
+
+#### Website Configuration
+```bash
+# Configure static website hosting
+aws s3api put-bucket-website --bucket mybucket --website-configuration file://website.json
+
+# Get website configuration
+aws s3api get-bucket-website --bucket mybucket
+
+# Delete website configuration
+aws s3api delete-bucket-website --bucket mybucket
+```
+
+#### Bucket Notification
+```bash
+# Configure event notifications
+aws s3api put-bucket-notification-configuration --bucket mybucket --notification-configuration file://notification.json
+
+# Get notification configuration
+aws s3api get-bucket-notification-configuration --bucket mybucket
+```
+
+### Performance and Transfer Optimization
+```bash
+# Use accelerate configuration
+aws s3api put-bucket-accelerate-configuration --bucket mybucket --accelerate-configuration Status=Enabled
+
+# Transfer with acceleration
+aws s3 cp largefile.zip s3://mybucket/ --endpoint-url https://s3-accelerate.amazonaws.com
+
+# Set higher concurrency for sync
+aws s3 sync ./local-dir s3://mybucket/remote-dir --size-only --metadata-directive COPY --acl bucket-owner-full-control --no-follow-symlinks --no-progress --delete --exact-timestamps --only-show-errors --quiet --request-payer requester --exclude ".git/*" --exclude ".vscode/*" --storage-class STANDARD_IA --sse-kms-key-id key_ARN
+```
+
+### Example JSON Configuration Files
+
+#### CORS Configuration (cors.json)
+```json
+{
+  "CORSRules": [
+    {
+      "AllowedOrigins": ["*"],
+      "AllowedHeaders": ["*"],
+      "AllowedMethods": ["GET", "PUT", "POST", "DELETE", "HEAD"],
+      "MaxAgeSeconds": 3000
+    }
+  ]
+}
+```
+
+#### Lifecycle Configuration (lifecycle.json)
+```json
+{
+  "Rules": [
+    {
+      "ID": "Move to IA after 30 days, Glacier after 90, expire after 365",
+      "Status": "Enabled",
+      "Filter": {
+        "Prefix": "logs/"
+      },
+      "Transitions": [
+        {
+          "Days": 30,
+          "StorageClass": "STANDARD_IA"
+        },
+        {
+          "Days": 90,
+          "StorageClass": "GLACIER"
+        }
+      ],
+      "Expiration": {
+        "Days": 365
+      }
+    }
+  ]
+}
+```
+
+#### Website Configuration (website.json)
+```json
+{
+  "IndexDocument": {
+    "Suffix": "index.html"
+  },
+  "ErrorDocument": {
+    "Key": "error.html"
+  },
+  "RoutingRules": [
+    {
+      "Condition": {
+        "KeyPrefixEquals": "docs/"
+      },
+      "Redirect": {
+        "ReplaceKeyPrefixWith": "documents/"
+      }
+    }
+  ]
+}
 ```
 
 ### Bucket Policies
