@@ -32,6 +32,7 @@ A comprehensive collection of cheatsheets for various development tools, technol
 - [Kubernetes (k8s)](k8.md)
 - [Podman](podman.md)
 - [Terraform](terraform.md)
+- [Vagrant](vagrant.md)
 
 ### Databases
 - [PostgreSQL](postgresql.md)
