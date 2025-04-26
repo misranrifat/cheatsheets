@@ -34,6 +34,7 @@ A comprehensive collection of cheatsheets for various development tools, technol
 - [PostgreSQL](postgresql.md)
 
 ### Development Tools
+- [Git](git.md)
 - [Linux](linux.md)
 - [Nano](nano.md)
 - [Vim](vim.md)
