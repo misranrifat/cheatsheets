@@ -17,7 +17,7 @@ A comprehensive collection of cheatsheets for various development tools, technol
   - [Version Management](java-versions.md)
 
 - **Python**
-  - [Behave (Behavior-Driven Development)](python-behave.md)
+  - [Behave](python-behave.md)
   - [NumPy](python-numpy.md)
   - [Object-Oriented Programming](python-oop.md)
   - [Pandas](python-pandas.md)
