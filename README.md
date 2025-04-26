@@ -19,6 +19,7 @@ A comprehensive collection of cheatsheets for various development tools, technol
 - **Python**
   - [Behave (Behavior-Driven Development)](python-behave.md)
   - [NumPy](python-numpy.md)
+  - [Object-Oriented Programming](python-oop.md)
   - [Pandas](python-pandas.md)
   - [Playwright](python-playwright.md)
   - [PySpark](python-pyspark.md)
