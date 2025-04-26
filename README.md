@@ -35,6 +35,7 @@ A comprehensive collection of cheatsheets for various development tools, technol
 
 ### Databases
 - [PostgreSQL](postgresql.md)
+- [Redis](redis.md)
 
 ### Development Tools
 - [Git](git.md)
