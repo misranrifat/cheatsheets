@@ -31,6 +31,7 @@ A comprehensive collection of cheatsheets for various development tools, technol
 - [Homebrew](homebrew.md)
 - [Kubernetes (k8s)](k8.md)
 - [Podman](podman.md)
+- [Terraform](terraform.md)
 
 ### Databases
 - [PostgreSQL](postgresql.md)
