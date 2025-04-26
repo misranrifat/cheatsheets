@@ -29,6 +29,7 @@ A comprehensive collection of cheatsheets for various development tools, technol
 - [AWS CLI](aws-cli.md)
 - [Docker](docker.md)
 - [Homebrew](homebrew.md)
+- [Kubernetes (k8s)](k8.md)
 
 ### Databases
 - [PostgreSQL](postgresql.md)
