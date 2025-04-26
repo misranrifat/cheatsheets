@@ -24,6 +24,7 @@ A comprehensive collection of cheatsheets for various development tools, technol
   - [Playwright](python-playwright.md)
   - [PySpark](python-pyspark.md)
   - [PyTorch](python-pytorch.md)
+  - [FastAPI](python-fast-api.md)
 
 ### DevOps & Cloud
 - [AWS CLI](aws-cli.md)
