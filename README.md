@@ -25,6 +25,7 @@ A comprehensive collection of cheatsheets for various development tools, technol
   - [PySpark](python-pyspark.md)
   - [PyTorch](python-pytorch.md)
   - [FastAPI](python-fast-api.md)
+  - [Django](python-django.md)
 
 ### DevOps & Cloud
 - [AWS CLI](aws-cli.md)
