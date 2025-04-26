@@ -35,6 +35,7 @@ A comprehensive collection of cheatsheets for various development tools, technol
 - [Podman](podman.md)
 - [Terraform](terraform.md)
 - [Vagrant](vagrant.md)
+- [SSH](ssh.md)
 
 ### Databases
 - [PostgreSQL](postgresql.md)
