@@ -1,4 +1,4 @@
-# Developer Cheatsheets Collection
+# Cheatsheets Collection
 
 A comprehensive collection of cheatsheets for various development tools, technologies, and frameworks. This repository serves as a quick reference guide for developers working with different technologies.
 
