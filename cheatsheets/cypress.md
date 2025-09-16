@@ -1029,3 +1029,189 @@ it('uses a custom task', () => {
   });
 });
 ```
+
+## Best Practices
+
+### Test Organization
+```javascript
+// Use data attributes for testing
+// In your HTML:
+// <button data-cy="submit-button">Submit</button>
+
+// In your tests:
+cy.get('[data-cy="submit-button"]').click();
+
+// Create custom command for data-cy selectors
+Cypress.Commands.add('getByCy', (selector) => {
+  return cy.get(`[data-cy="${selector}"]`);
+});
+
+cy.getByCy('submit-button').click();
+```
+
+### Writing Stable Tests
+```javascript
+// Bad: Using brittle selectors
+cy.get('.btn.btn-primary.submit-form').click();
+cy.get('#root > div > div.container > button').click();
+
+// Good: Using data attributes
+cy.get('[data-testid="submit"]').click();
+cy.get('[data-cy="submit"]').click();
+
+// Bad: Not waiting for requests
+cy.visit('/dashboard');
+cy.get('.user-name').should('contain', 'John');
+
+// Good: Waiting for data to load
+cy.intercept('GET', '/api/user').as('getUser');
+cy.visit('/dashboard');
+cy.wait('@getUser');
+cy.get('.user-name').should('contain', 'John');
+
+// Bad: Using hard-coded waits
+cy.wait(3000);
+cy.get('button').click();
+
+// Good: Using proper assertions
+cy.get('button').should('be.enabled').click();
+```
+
+### Test Isolation
+```javascript
+// Good: Each test is independent
+describe('User Dashboard', () => {
+  beforeEach(() => {
+    cy.task('resetDb');  // Reset database state
+    cy.task('seedDb');   // Seed with test data
+    cy.loginViaApi();    // Fast login via API
+    cy.visit('/dashboard');
+  });
+
+  it('should display user info', () => {
+    cy.get('[data-cy="user-info"]').should('be.visible');
+  });
+
+  it('should allow profile editing', () => {
+    cy.get('[data-cy="edit-profile"]').click();
+    cy.get('[data-cy="name-input"]').clear().type('New Name');
+    cy.get('[data-cy="save"]').click();
+  });
+});
+```
+
+### Performance Optimization
+```javascript
+// Use cy.session() for authentication
+Cypress.Commands.add('loginFast', (user) => {
+  cy.session(user, () => {
+    cy.request('POST', '/api/login', user).then((response) => {
+      window.localStorage.setItem('authToken', response.body.token);
+    });
+  });
+});
+
+// Stub external dependencies
+cy.intercept('GET', 'https://api.external.com/**', { fixture: 'external.json' });
+
+// Use API calls for setup
+cy.request('POST', '/api/test-data/create', { type: 'user' }).then((user) => {
+  cy.wrap(user.body).as('testUser');
+});
+
+// Parallelize tests
+// In cypress.config.js:
+module.exports = defineConfig({
+  e2e: {
+    // Split specs across multiple machines
+    specPattern: 'cypress/e2e/**/*.cy.{js,jsx,ts,tsx}',
+  }
+});
+```
+
+### Error Handling
+```javascript
+// Handle uncaught exceptions
+Cypress.on('uncaught:exception', (err, runnable) => {
+  // Return false to prevent test failure
+  if (err.message.includes('ResizeObserver')) {
+    return false;
+  }
+  // Let other errors fail the test
+  return true;
+});
+
+// Custom error messages
+cy.get('[data-cy="submit"]', { timeout: 10000 })
+  .should('be.visible', 'Submit button should be visible after form loads')
+  .click();
+
+// Retry configuration
+// In cypress.config.js:
+module.exports = defineConfig({
+  retries: {
+    runMode: 2,  // Retry failed tests in CI
+    openMode: 0  // No retries in interactive mode
+  }
+});
+```
+
+### CI/CD Integration
+```yaml
+# .github/workflows/cypress.yml
+name: Cypress Tests
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - run: npm ci
+      - run: npm start & npx wait-on http://localhost:3000
+      - run: npx cypress run --record --key ${{ secrets.CYPRESS_RECORD_KEY }}
+        env:
+          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+```
+
+### Common Patterns
+```javascript
+// Page Object Model
+class LoginPage {
+  visit() {
+    cy.visit('/login');
+    return this;
+  }
+
+  fillEmail(email) {
+    cy.get('[data-cy="email"]').type(email);
+    return this;
+  }
+
+  fillPassword(password) {
+    cy.get('[data-cy="password"]').type(password);
+    return this;
+  }
+
+  submit() {
+    cy.get('[data-cy="submit"]').click();
+    return this;
+  }
+
+  login(email, password) {
+    this.fillEmail(email)
+        .fillPassword(password)
+        .submit();
+    return this;
+  }
+}
+
+const loginPage = new LoginPage();
+
+it('should login successfully', () => {
+  loginPage
+    .visit()
+    .login('user@example.com', 'password123');
+
+  cy.url().should('include', '/dashboard');
+});
