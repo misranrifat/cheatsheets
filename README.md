@@ -9,19 +9,14 @@ A comprehensive collection of cheatsheets for various development tools, technol
   - [Collections Framework](cheatsheets/java-collections.md)
   - [Maven & Gradle](cheatsheets/java-maven-gradle.md)
   - [Object-Oriented Programming](cheatsheets/java-oop.md)
-  - [Playwright](cheatsheets/java-playwright.md)
-  - [REST Assured](cheatsheets/java-rest-assured.md)
-  - [Selenium](cheatsheets/java-selenium.md)
   - [Spring Boot](cheatsheets/java-spring-boot.md)
   - [Stream API](cheatsheets/java-stream-api.md)
   - [Version Management](cheatsheets/java-versions.md)
 
 - **Python**
-  - [Behave](cheatsheets/python-behave.md)
   - [NumPy](cheatsheets/python-numpy.md)
   - [Object-Oriented Programming](cheatsheets/python-oop.md)
   - [Pandas](cheatsheets/python-pandas.md)
-  - [Playwright](cheatsheets/python-playwright.md)
   - [PySpark](cheatsheets/python-pyspark.md)
   - [PyTorch](cheatsheets/python-pytorch.md)
   - [FastAPI](cheatsheets/python-fast-api.md)
@@ -53,16 +48,15 @@ A comprehensive collection of cheatsheets for various development tools, technol
 
 ### Testing & Automation
 - [Cypress](cheatsheets/cypress.md)
+- [Karate API Testing](cheatsheets/karate-api.md)
 - [OCR](cheatsheets/ocr.md)
-
-## Usage
-
-Each cheatsheet is provided in Markdown format for easy reading both in text editors and on GitHub. The cheatsheets contain:
-- Common commands and syntax
-- Best practices
-- Useful tips and tricks
-- Configuration examples
-- Common use cases
+- **Java Testing**
+  - [Playwright](cheatsheets/java-playwright.md)
+  - [REST Assured](cheatsheets/java-rest-assured.md)
+  - [Selenium](cheatsheets/java-selenium.md)
+- **Python Testing**
+  - [Behave](cheatsheets/python-behave.md)
+  - [Playwright](cheatsheets/python-playwright.md)
 
 ## License
 

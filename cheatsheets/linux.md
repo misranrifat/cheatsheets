@@ -309,6 +309,202 @@ visudo                      # Edit sudoers file safely
 
 ## Networking
 
+### HTTP Requests with curl
+
+#### Basic curl Usage
+```bash
+curl https://api.example.com       # Basic GET request
+curl -I https://example.com        # Headers only (HEAD request)
+curl -v https://example.com        # Verbose output (debug info)
+curl -s https://example.com        # Silent mode (no progress bar)
+curl -o output.html example.com    # Save to file
+curl -O example.com/file.pdf       # Save with remote filename
+curl -L https://example.com        # Follow redirects
+curl -k https://example.com        # Skip SSL certificate verification
+```
+
+#### CRUD Operations (REST API)
+```bash
+# GET - Read/Retrieve data
+curl -X GET https://api.example.com/users
+curl -X GET https://api.example.com/users/123
+curl -H "Accept: application/json" https://api.example.com/users
+
+# POST - Create new resource
+curl -X POST https://api.example.com/users \
+  -H "Content-Type: application/json" \
+  -d '{"name":"John Doe","email":"john@example.com"}'
+
+curl -X POST https://api.example.com/users \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "name=John&email=john@example.com"
+
+# PUT - Update entire resource
+curl -X PUT https://api.example.com/users/123 \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Jane Doe","email":"jane@example.com"}'
+
+# PATCH - Partial update
+curl -X PATCH https://api.example.com/users/123 \
+  -H "Content-Type: application/json" \
+  -d '{"email":"newemail@example.com"}'
+
+# DELETE - Remove resource
+curl -X DELETE https://api.example.com/users/123
+curl -X DELETE https://api.example.com/users/123 \
+  -H "Authorization: Bearer token123"
+```
+
+#### Authentication with curl
+```bash
+# Basic Authentication
+curl -u username:password https://api.example.com
+curl -u username https://api.example.com  # Prompts for password
+curl https://username:password@api.example.com
+
+# Bearer Token
+curl -H "Authorization: Bearer your_token_here" https://api.example.com
+
+# API Key in Header
+curl -H "X-API-Key: your_api_key" https://api.example.com
+
+# OAuth 2.0 Token Request
+curl -X POST https://auth.example.com/oauth/token \
+  -d "grant_type=client_credentials" \
+  -d "client_id=your_client_id" \
+  -d "client_secret=your_client_secret"
+```
+
+#### Working with Headers
+```bash
+# Custom headers
+curl -H "Custom-Header: value" https://api.example.com
+curl -H "Accept: application/json" -H "Content-Type: application/json" https://api.example.com
+
+# Multiple headers
+curl -H "Accept: application/json" \
+     -H "Authorization: Bearer token" \
+     -H "X-Request-ID: 12345" \
+     https://api.example.com
+
+# User-Agent header
+curl -A "Mozilla/5.0" https://example.com
+curl --user-agent "Custom User Agent" https://example.com
+```
+
+#### Sending Data
+```bash
+# JSON data
+curl -X POST https://api.example.com/data \
+  -H "Content-Type: application/json" \
+  -d '{"key":"value","array":[1,2,3]}'
+
+# JSON from file
+curl -X POST https://api.example.com/data \
+  -H "Content-Type: application/json" \
+  -d @data.json
+
+# Form data
+curl -X POST https://example.com/form \
+  -F "field1=value1" \
+  -F "field2=value2" \
+  -F "file=@/path/to/file.pdf"
+
+# URL encoded data
+curl -X POST https://example.com/form \
+  --data-urlencode "message=Hello World" \
+  --data-urlencode "name=John Doe"
+```
+
+#### File Upload/Download
+```bash
+# Upload file
+curl -X POST https://api.example.com/upload \
+  -F "file=@/path/to/local/file.pdf" \
+  -F "description=Important document"
+
+# Upload multiple files
+curl -X POST https://api.example.com/upload \
+  -F "files[]=@file1.pdf" \
+  -F "files[]=@file2.pdf"
+
+# Download file
+curl -O https://example.com/file.pdf           # Save with original name
+curl -o custom_name.pdf https://example.com/file.pdf  # Custom filename
+curl -C - -O https://example.com/large_file.zip  # Resume interrupted download
+```
+
+#### Advanced curl Options
+```bash
+# Timeouts
+curl --connect-timeout 5 https://example.com   # Connection timeout (seconds)
+curl --max-time 30 https://example.com        # Maximum operation time
+
+# Rate limiting
+curl --limit-rate 200K https://example.com/large_file  # Limit to 200KB/s
+
+# Proxy
+curl -x proxy.example.com:8080 https://example.com
+curl -x http://proxy:8080 --proxy-user user:pass https://example.com
+
+# Cookies
+curl -c cookies.txt https://example.com        # Save cookies
+curl -b cookies.txt https://example.com        # Send cookies
+curl -b "session=abc123; token=xyz" https://example.com  # Send specific cookies
+
+# Follow redirects with limit
+curl -L --max-redirs 5 https://example.com
+
+# Retry on failure
+curl --retry 3 --retry-delay 5 https://example.com
+```
+
+#### Testing and Debugging
+```bash
+# Measure request time
+curl -o /dev/null -s -w "Total time: %{time_total}s\n" https://example.com
+
+# Show detailed timing
+curl -o /dev/null -s -w @- https://example.com <<'EOF'
+    DNS lookup:        %{time_namelookup}s
+    TCP connect:       %{time_connect}s
+    SSL handshake:     %{time_appconnect}s
+    Server processing: %{time_starttransfer}s
+    Total time:        %{time_total}s
+EOF
+
+# Show only HTTP status code
+curl -o /dev/null -s -w "%{http_code}\n" https://example.com
+
+# Debug with trace
+curl --trace-ascii debug.txt https://example.com
+curl --trace debug.bin https://example.com
+```
+
+#### Common API Testing Examples
+```bash
+# GraphQL query
+curl -X POST https://api.example.com/graphql \
+  -H "Content-Type: application/json" \
+  -d '{"query":"{ users { id name email } }"}'
+
+# WebSocket test (requires curl 7.86.0+)
+curl --http1.1 \
+  -H "Upgrade: websocket" \
+  -H "Connection: Upgrade" \
+  -H "Sec-WebSocket-Key: x3JJHMbDL1EzLkh9GBhXDw==" \
+  -H "Sec-WebSocket-Version: 13" \
+  https://example.com/websocket
+
+# Multiple requests in sequence
+for i in {1..5}; do
+  curl -X GET "https://api.example.com/item/$i"
+done
+
+# Parallel requests
+curl https://api.example.com/users/[1-10] --parallel --parallel-max 5
+```
+
 ### Network Configuration
 ```bash
 ip addr                     # Show IP addresses
