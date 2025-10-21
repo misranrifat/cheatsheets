@@ -24,6 +24,9 @@
 - [Java 20 (2023)](#java-20-2023)
 - [Java 21 (2023)](#java-21-2023)
 - [Java 22 (2024)](#java-22-2024)
+- [Java 23 (2024)](#java-23-2024)
+- [Java 24 (2025)](#java-24-2025)
+- [Java 25 (2025)](#java-25-2025)
 - [Release Pattern](#release-pattern)
 
 ## Java 1.0 (1996)
@@ -657,11 +660,342 @@ List<Integer> list = Stream.of(1, 2, 3, 4, 5, 6)
 - Socket API improvements
 - Foreign Function & Memory API improvements
 
+## Java 23 (2024)
+
+Released on September 17, 2024 (non-LTS release).
+
+**Key Features:**
+
+- Markdown documentation comments (standard)
+```java
+/**
+# API Documentation
+
+This is **bold** and this is *italic*.
+
+## Parameters
+- `name` - The user's name
+- `age` - The user's age
+
+## Returns
+A `User` object with the provided details
+*/
+public User createUser(String name, int age) {
+    return new User(name, age);
+}
+```
+
+- Primitive types in patterns (preview)
+```java
+// Pattern matching with primitives
+int value = 42;
+String result = switch (value) {
+    case int i when i > 0 -> "Positive";
+    case int i when i < 0 -> "Negative";
+    case int i -> "Zero";
+};
+```
+
+- Class-File API (preview)
+```java
+// Standard API for parsing, generating, and transforming class files
+ClassModel cm = ClassFile.of().parse(bytes);
+byte[] newBytes = ClassFile.of().build(
+    cm.thisClass().asSymbol(),
+    clb -> {
+        for (ClassElement ce : cm) {
+            if (ce instanceof MethodModel mm) {
+                clb.withMethod(mm.methodName(), mm.methodType(),
+                    ClassFile.ACC_PUBLIC, mb -> {
+                        // Transform method
+                    });
+            } else {
+                clb.with(ce);
+            }
+        }
+    });
+```
+
+- Stream gatherers (preview)
+```java
+// Custom stream transformations beyond built-in operations
+List<String> result = Stream.of("a", "b", "c", "d")
+    .gather(Gatherers.windowFixed(2))
+    .map(window -> String.join("-", window))
+    .toList();  // ["a-b", "c-d"]
+```
+
+- Module import declarations (preview)
+```java
+// Import all exported packages from a module
+import module java.sql;
+
+// Instead of:
+// import java.sql.*;
+// import javax.sql.*;
+// import java.sql.rowset.*;
+```
+
+- Implicitly declared classes (preview)
+```java
+// Simplified main methods for beginners
+void main() {
+    println("Hello, World!");
+}
+```
+
+- Structured concurrency (third preview)
+- Scoped values (preview)
+```java
+final static ScopedValue<User> CURRENT_USER = ScopedValue.newInstance();
+
+void serve(Request request, User user) {
+    ScopedValue.where(CURRENT_USER, user)
+        .run(() -> process(request));
+}
+
+void process(Request request) {
+    User user = CURRENT_USER.get();  // Access from any method in call stack
+    // Process request with user context
+}
+```
+
+- Flexible constructor bodies (preview)
+```java
+class PositiveBigInteger extends BigInteger {
+    PositiveBigInteger(long value) {
+        // Can now have statements before super()
+        if (value <= 0)
+            throw new IllegalArgumentException("non-positive value");
+        super(String.valueOf(value));
+    }
+}
+```
+
+- ZGC: Generational mode by default
+- Deprecate memory-access methods in sun.misc.Unsafe for removal
+
+**Notable Removal:**
+- String templates feature was removed due to design issues
+
+## Java 24 (2025)
+
+Released on March 18, 2025 (non-LTS release).
+
+**Key Features:**
+
+- Quantum-resistant cryptography (standard)
+```java
+// ML-DSA (Module-Lattice-Based Digital Signature Algorithm)
+KeyPairGenerator kpg = KeyPairGenerator.getInstance("ML-DSA");
+KeyPair keyPair = kpg.generateKeyPair();
+Signature sig = Signature.getInstance("ML-DSA");
+sig.initSign(keyPair.getPrivate());
+sig.update(data);
+byte[] signature = sig.sign();
+
+// ML-KEM (Module-Lattice-Based Key Encapsulation Mechanism)
+KeyPairGenerator kemKpg = KeyPairGenerator.getInstance("ML-KEM");
+KeyPair kemKeyPair = kemKpg.generateKeyPair();
+```
+
+- Synchronizing virtual threads without pinning
+```java
+// Virtual threads now release platform threads when blocked
+// No more pinning in synchronized blocks
+synchronized (lock) {
+    // Virtual thread yields platform thread while waiting
+    lock.wait();
+}
+```
+
+- Compact object headers (experimental)
+```java
+// Reduces object header size from 96-128 bits to 64 bits
+// ~25% heap size reduction on 64-bit architectures
+// Enable with: -XX:+UseCompactObjectHeaders
+```
+
+- Primitive types in patterns (second preview)
+```java
+// Enhanced pattern matching for all primitive types
+Object obj = 42;
+switch (obj) {
+    case int i when i > 0 -> System.out.println("Positive int");
+    case long l -> System.out.println("Long: " + l);
+    case double d -> System.out.println("Double: " + d);
+    default -> System.out.println("Other");
+}
+```
+
+- Stable values (preview)
+```java
+// Computed constants initialized at most once
+class Configuration {
+    private static final StableValue<Properties> CONFIG =
+        StableValue.of(() -> loadConfig());
+
+    static Properties getConfig() {
+        return CONFIG.get();
+    }
+}
+```
+
+- Simple source files and instance main methods (fourth preview)
+- Flexible constructor bodies (third preview)
+- Module import declarations (second preview)
+- Structured concurrency (fourth preview)
+- Scoped values (second preview)
+
+- Stream gatherers (standard)
+```java
+// Custom intermediate stream operations
+Stream.of(1, 2, 3, 4, 5)
+    .gather(Gatherers.fold(() -> 0, (a, b) -> a + b))
+    .forEach(System.out::println);
+```
+
+- Class-File API (standard)
+- Key Derivation Function API
+```java
+// Derive keys from secrets using HKDF, Argon2, etc.
+KDF kdf = KDF.getInstance("HKDF-SHA256");
+SecretKey derivedKey = kdf.deriveKey(inputKey, info, algorithm, keySize);
+```
+
+- Vector API (ninth incubator)
+- Generational Shenandoah GC (experimental)
+- Ahead-of-Time class loading
+- Unsafe memory access warnings
+
+**Deprecations and Removals:**
+- Security Manager permanently disabled
+- 32-bit x86 port deprecated for removal (Linux)
+- 32-bit x86 port removed (Windows)
+- ZGC non-generational mode removed
+
+## Java 25 (2025)
+
+Long-Term Support (LTS) release scheduled for September 16, 2025.
+
+**Key Features:**
+
+- Compact object headers (standard)
+```java
+// Object headers reduced to 64 bits (production-ready)
+// Improves heap size and data locality
+// No flag needed - enabled by default
+```
+
+- Flexible constructor bodies (standard)
+```java
+// Finalized feature allowing statements before super()/this()
+class ValidationClass extends BaseClass {
+    ValidationClass(String value) {
+        if (value == null || value.isEmpty()) {
+            throw new IllegalArgumentException("Invalid value");
+        }
+        super(value.trim().toLowerCase());
+    }
+}
+```
+
+- Compact source files and instance main methods (standard)
+```java
+// Beginners can write streamlined programs
+void main() {
+    var names = List.of("Alice", "Bob", "Charlie");
+    names.forEach(name -> println("Hello, " + name));
+}
+```
+
+- Structured concurrency (fifth preview)
+```java
+// Treat related concurrent tasks as single units
+try (var scope = StructuredTaskScope.open()) {
+    Future<String> user = scope.fork(() -> fetchUser());
+    Future<Order> order = scope.fork(() -> fetchOrder());
+
+    scope.join();
+    return processUserOrder(user.resultNow(), order.resultNow());
+}
+```
+
+- Primitive types in patterns (third preview)
+- Scoped values (fifth preview)
+- Module import declarations (third preview)
+
+- Stable values (preview)
+```java
+// Immutable data objects treated as constants by JVM
+class CacheManager {
+    private final StableValue<DataCache> cache =
+        StableValue.of(() -> initializeCache());
+
+    public DataCache getCache() {
+        return cache.get();  // Constant-folding optimization
+    }
+}
+```
+
+- Key Derivation Function API (standard)
+```java
+// Support for Argon2, HKDF, ML-KEM, TLS 1.3 Hybrid Key Exchange
+KDF argon2 = KDF.getInstance("Argon2id");
+SecretKey key = argon2.deriveKey(password, salt, params);
+```
+
+- Vector API (tenth incubator)
+```java
+// Enhanced with Float16 auto-vectorization on x64
+// Links to native mathematical libraries via FFM API
+var species = FloatVector.SPECIES_256;
+var a = FloatVector.fromArray(species, arrayA, 0);
+var b = FloatVector.fromArray(species, arrayB, 0);
+var c = a.mul(b).add(vectorC);
+c.intoArray(result, 0);
+```
+
+- PEM encodings (preview)
+```java
+// Concise API for encoding/decoding cryptographic objects
+PemDecoder decoder = PemDecoder.create();
+PrivateKey key = decoder.decodePrivateKey(pemString);
+
+PemEncoder encoder = PemEncoder.create();
+String pemOutput = encoder.encode(certificate);
+```
+
+- Generational Shenandoah GC (standard)
+```java
+// Promoted from experimental to production
+// Enable with: -XX:+UseShenandoahGC
+// Generational mode is default
+```
+
+- JDK Flight Recorder enhancements
+  - CPU-time profiling with accurate metrics on Linux
+  - Cooperative sampling for stable async stack sampling
+  - Method timing and tracing without bytecode instrumentation
+
+- Ahead-of-Time improvements
+  - Simplified AOT cache creation
+  - Method profiling for faster startup
+
+**AI Development Support:**
+Five features target AI development: primitive types in patterns, module import declarations, Vector API, structured concurrency, and scoped values.
+
+**Removals:**
+- 32-bit x86 port source code and build support removed
+
+**Support:**
+As an LTS release, Java 25 receives at least 8 years of Premier commercial support from Oracle.
+
 ## Release Pattern
 
 Since Java 10, Oracle has shifted to a time-based release model:
 - **Feature releases**: Every six months (March and September)
-- **Long-term support (LTS) releases**: Every two years (Java 11, 17, 21, etc.)
+- **Long-term support (LTS) releases**: Every two years (Java 11, 17, 21, 25, etc.)
 
 **Release Features Lifecycle:**
 1. **Incubator** - Early-stage feature development where APIs may change
