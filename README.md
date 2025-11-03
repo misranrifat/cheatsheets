@@ -14,26 +14,32 @@ A comprehensive collection of cheatsheets for various development tools, technol
   - [Version Management](cheatsheets/java-versions.md)
 
 - **Python**
+  - [Virtual Environments & pip](cheatsheets/python-venv-pip.md)
+  - [Dask](cheatsheets/python-dask.md)
+  - [Django](cheatsheets/python-django.md)
+  - [FastAPI](cheatsheets/python-fast-api.md)
   - [NumPy](cheatsheets/python-numpy.md)
   - [Object-Oriented Programming](cheatsheets/python-oop.md)
   - [Pandas](cheatsheets/python-pandas.md)
   - [PySpark](cheatsheets/python-pyspark.md)
   - [PyTorch](cheatsheets/python-pytorch.md)
-  - [FastAPI](cheatsheets/python-fast-api.md)
-  - [Django](cheatsheets/python-django.md)
 
 ### DevOps & Cloud
 - [AWS CLI](cheatsheets/aws-cli.md)
+- [Azure CLI](cheatsheets/azure-cli.md)
 - [Docker](cheatsheets/docker.md)
+- [GCP CLI (gcloud)](cheatsheets/gcp-cli.md)
+- [GitHub Actions](cheatsheets/github-actions.md)
+- [GitLab CI/CD](cheatsheets/gitlab-ci.md)
+- [Helm](cheatsheets/helm.md)
 - [Homebrew](cheatsheets/homebrew.md)
+- [Jenkinsfile](cheatsheets/jenkinsfile.md)
 - [Kubernetes (k8s)](cheatsheets/k8.md)
+- [Packer](cheatsheets/packer.md)
 - [Podman](cheatsheets/podman.md)
+- [SSH](cheatsheets/ssh.md)
 - [Terraform](cheatsheets/terraform.md)
 - [Vagrant](cheatsheets/vagrant.md)
-- [SSH](cheatsheets/ssh.md)
-- [Helm](cheatsheets/helm.md)
-- [Packer](cheatsheets/packer.md)
-- [Jenkinsfile](cheatsheets/jenkinsfile.md)
 
 ### Databases
 - [PostgreSQL](cheatsheets/postgresql.md)
@@ -44,6 +50,8 @@ A comprehensive collection of cheatsheets for various development tools, technol
 - [Git](cheatsheets/git.md)
 - [Linux](cheatsheets/linux.md)
 - [Nano](cheatsheets/nano.md)
+- [Nginx](cheatsheets/nginx.md)
+- [UFW (Uncomplicated Firewall)](cheatsheets/ufw.md)
 - [Vim](cheatsheets/vim.md)
 
 ### Testing & Automation
@@ -51,9 +59,11 @@ A comprehensive collection of cheatsheets for various development tools, technol
 - [Karate API Testing](cheatsheets/karate-api.md)
 - [OCR](cheatsheets/ocr.md)
 - **Java Testing**
+  - [Hamcrest](cheatsheets/java-hamcrest.md)
   - [Playwright](cheatsheets/java-playwright.md)
   - [REST Assured](cheatsheets/java-rest-assured.md)
   - [Selenium](cheatsheets/java-selenium.md)
+  - [TestNG](cheatsheets/java-testng.md)
 - **Python Testing**
   - [Behave](cheatsheets/python-behave.md)
   - [Playwright](cheatsheets/python-playwright.md)
