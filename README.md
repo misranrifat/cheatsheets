@@ -67,6 +67,8 @@ A comprehensive collection of cheatsheets for various development tools, technol
 - **Python Testing**
   - [Behave](cheatsheets/python-behave.md)
   - [Playwright](cheatsheets/python-playwright.md)
+- **TypeScript Testing**
+  - [Playwright](cheatsheets/typescript-playwright.md)
 
 ## License
 
