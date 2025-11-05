@@ -1,0 +1,67 @@
+name: PR Markdown Quality Check
+
+on:
+  pull_request:
+    branches:
+      - '**'
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'src/cheatsheets/**.md'
+      - 'README.md'
+
+jobs:
+  check-markdown-quality:
+    name: Check Markdown Quality
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Validate changed markdown files
+        id: validate
+        run: |
+          echo "Running markdown validation..."
+          if python src/utilities/validate_markdown.py --all; then
+            echo "validation_status=success" >> $GITHUB_OUTPUT
+            echo "All markdown files passed validation!"
+          else
+            echo "validation_status=failure" >> $GITHUB_OUTPUT
+            echo "Markdown validation failed. Please check the logs above."
+            exit 1
+          fi
+
+      - name: Comment on PR - Success
+        if: steps.validate.outputs.validation_status == 'success'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '**Markdown Validation Passed**\n\nAll markdown cheatsheet files are properly formatted and validated successfully!'
+            })
+
+      - name: Comment on PR - Failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '**Markdown Validation Failed**\n\nSome markdown files have formatting issues. Please check the [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.\n\nTo validate locally, run:\n```bash\npython src/utilities/validate_markdown.py --all\n```'
+            })
