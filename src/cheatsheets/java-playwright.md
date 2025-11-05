@@ -1,4 +1,4 @@
- # Java Playwright Cheatsheet
+# Java Playwright Cheatsheet
 
 ## Table of Contents
 - [Installation and Setup](#installation-and-setup)
@@ -126,7 +126,7 @@ Page newPage = context.waitForPage(() -> {
 page.navigate("https://example.com");
 
 // Navigate with options
-page.navigate("https://example.com", 
+page.navigate("https://example.com",
     new Page.NavigateOptions()
         .setTimeout(30000)     // 30 seconds timeout
         .setWaitUntil(WaitUntilState.NETWORKIDLE)  // Wait until network is idle
@@ -264,7 +264,7 @@ page.selectOption("select#country", new SelectOption().setIndex(2));  // By inde
 // File upload
 page.setInputFiles("input[type='file']", Paths.get("myfile.pdf"));
 page.setInputFiles("input[type='file']", new Path[]{
-    Paths.get("file1.pdf"), 
+    Paths.get("file1.pdf"),
     Paths.get("file2.pdf")
 });
 ```
@@ -479,29 +479,29 @@ page.pause();
 ```java
 public class LoginPage {
     private final Page page;
-    
+
     // Locators
     private final Locator usernameInput;
     private final Locator passwordInput;
     private final Locator loginButton;
-    
+
     public LoginPage(Page page) {
         this.page = page;
         this.usernameInput = page.locator("#username");
         this.passwordInput = page.locator("#password");
         this.loginButton = page.locator("button[type='submit']");
     }
-    
+
     public void navigate() {
         page.navigate("https://example.com/login");
     }
-    
+
     public void login(String username, String password) {
         usernameInput.fill(username);
         passwordInput.fill(password);
         loginButton.click();
     }
-    
+
     public boolean isLoggedIn() {
         return page.url().contains("/dashboard");
     }
@@ -571,32 +571,32 @@ import com.microsoft.playwright.*;
 public class PlaywrightTest {
     static Playwright playwright;
     static Browser browser;
-    
+
     BrowserContext context;
     Page page;
-    
+
     @BeforeAll
     static void launchBrowser() {
         playwright = Playwright.create();
         browser = playwright.chromium().launch();
     }
-    
+
     @AfterAll
     static void closeBrowser() {
         playwright.close();
     }
-    
+
     @BeforeEach
     void createContextAndPage() {
         context = browser.newContext();
         page = context.newPage();
     }
-    
+
     @AfterEach
     void closeContext() {
         context.close();
     }
-    
+
     @Test
     void shouldNavigateToHomepage() {
         page.navigate("https://playwright.dev/");
@@ -616,29 +616,29 @@ public class PlaywrightTestNG {
     Browser browser;
     BrowserContext context;
     Page page;
-    
+
     @BeforeSuite
     void launchBrowser() {
         playwright = Playwright.create();
         browser = playwright.chromium().launch();
     }
-    
+
     @AfterSuite
     void closeBrowser() {
         playwright.close();
     }
-    
+
     @BeforeMethod
     void createContextAndPage() {
         context = browser.newContext();
         page = context.newPage();
     }
-    
+
     @AfterMethod
     void closeContext() {
         context.close();
     }
-    
+
     @Test
     void shouldNavigateToHomepage() {
         page.navigate("https://playwright.dev/");
@@ -656,22 +656,22 @@ import com.microsoft.playwright.*;
 public class StepDefinitions {
     private final PlaywrightContext context;  // Custom class to manage Playwright
     private Page page;
-    
+
     public StepDefinitions(PlaywrightContext context) {
         this.context = context;
         this.page = context.getPage();
     }
-    
+
     @Given("I navigate to {string}")
     public void navigateTo(String url) {
         page.navigate(url);
     }
-    
+
     @When("I click on {string}")
     public void clickElement(String selector) {
         page.click(selector);
     }
-    
+
     @Then("I should see {string}")
     public void checkContent(String text) {
         page.waitForSelector("text=" + text);
@@ -684,16 +684,16 @@ import com.microsoft.playwright.*;
 
 public class Hooks {
     private final PlaywrightContext context;
-    
+
     public Hooks(PlaywrightContext context) {
         this.context = context;
     }
-    
+
     @Before
     public void beforeScenario() {
         context.createContextAndPage();
     }
-    
+
     @After
     public void afterScenario() {
         context.closeContext();
