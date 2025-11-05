@@ -62,24 +62,24 @@ describe('My First Test', () => {
   before(() => {
     // Runs once before all tests
   });
-  
+
   beforeEach(() => {
     // Runs before each test
     cy.visit('https://example.com');
   });
-  
+
   it('should display the homepage', () => {
     cy.get('h1').should('contain', 'Example Domain');
   });
-  
+
   it('should have a visible link', () => {
     cy.get('a').should('be.visible');
   });
-  
+
   afterEach(() => {
     // Runs after each test
   });
-  
+
   after(() => {
     // Runs once after all tests
   });
@@ -94,7 +94,7 @@ describe('Parent Suite', () => {
       // Test code
     });
   });
-  
+
   describe('Child Suite 2', () => {
     it('test 2', () => {
       // Test code
@@ -575,7 +575,7 @@ it('registers a new user', () => {
     email: faker.internet.email(),
     address: faker.location.streetAddress()
   };
-  
+
   cy.get('[name="name"]').type(user.name);
   cy.get('[name="email"]').type(user.email);
   cy.get('[name="address"]').type(user.address);
@@ -611,7 +611,7 @@ Cypress.Commands.overwrite('visit', (originalFn, url, options) => {
       'X-Custom-Header': 'Custom Value'
     }
   };
-  
+
   return originalFn(url, { ...defaultOptions, ...options });
 });
 ```
@@ -897,7 +897,7 @@ module.exports = defineConfig({
     setupNodeEvents(on, config) {
       // File preprocessing for TypeScript/Webpack
       on('file:preprocessor', preprocessor());
-      
+
       // Custom tasks
       on('task', {
         log(message) {
@@ -970,18 +970,18 @@ module.exports = defineConfig({
           console.log(message);
           return null;
         },
-        
+
         // Read external file
         readFile(filePath) {
           return fs.readFileSync(path.join(__dirname, filePath), 'utf8');
         },
-        
+
         // Write to external file
         writeFile({ filePath, content }) {
           fs.writeFileSync(path.join(__dirname, filePath), content);
           return null;
         },
-        
+
         // Generate random data
         generateRandomUser() {
           return {
@@ -989,7 +989,7 @@ module.exports = defineConfig({
             name: `User ${Math.random().toString(36).substring(2, 8)}`
           };
         },
-        
+
         // Database operations (example with knex)
         async dbQuery(query) {
           const knex = require('knex')({
@@ -1001,7 +1001,7 @@ module.exports = defineConfig({
               database: 'test_db'
             }
           });
-          
+
           const result = await knex.raw(query);
           await knex.destroy();
           return result.rows;
@@ -1017,12 +1017,12 @@ module.exports = defineConfig({
 it('uses a custom task', () => {
   // Execute a task
   cy.task('log', 'This will be logged to the console');
-  
+
   // Task with return value
   cy.task('generateRandomUser').then((user) => {
     cy.log(`Generated user: ${user.name}`);
   });
-  
+
   // Example database query
   cy.task('dbQuery', 'SELECT * FROM users LIMIT 1').then((users) => {
     cy.log(`First user: ${users[0].name}`);
@@ -1215,3 +1215,4 @@ it('should login successfully', () => {
 
   cy.url().should('include', '/dashboard');
 });
+```
