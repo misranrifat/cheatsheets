@@ -13,6 +13,8 @@
 - [Debugging](#debugging)
 - [Common Patterns](#common-patterns)
 - [Testing Frameworks Integration](#testing-frameworks-integration)
+- [Cross-Browser Parallel Execution](#cross-browser-parallel-execution)
+- [Allure Reporting](#allure-reporting)
 
 ## Installation and Setup
 
@@ -695,6 +697,760 @@ public class Hooks {
     @After
     public void afterScenario() {
         context.closeContext();
+    }
+}
+```
+
+## Cross-Browser Parallel Execution
+
+### TestNG Parallel Execution
+
+#### Dependencies (Maven)
+```xml
+<dependency>
+    <groupId>org.testng</groupId>
+    <artifactId>testng</artifactId>
+    <version>7.8.0</version>
+    <scope>test</scope>
+</dependency>
+```
+
+#### testng.xml Configuration
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Playwright Cross-Browser Suite" parallel="tests" thread-count="3">
+
+    <!-- Chrome Tests -->
+    <test name="Chrome Tests">
+        <parameter name="browser" value="chromium"/>
+        <classes>
+            <class name="com.example.tests.LoginTest"/>
+            <class name="com.example.tests.CheckoutTest"/>
+        </classes>
+    </test>
+
+    <!-- Firefox Tests -->
+    <test name="Firefox Tests">
+        <parameter name="browser" value="firefox"/>
+        <classes>
+            <class name="com.example.tests.LoginTest"/>
+            <class name="com.example.tests.CheckoutTest"/>
+        </classes>
+    </test>
+
+    <!-- WebKit Tests -->
+    <test name="WebKit Tests">
+        <parameter name="browser" value="webkit"/>
+        <classes>
+            <class name="com.example.tests.LoginTest"/>
+            <class name="com.example.tests.CheckoutTest"/>
+        </classes>
+    </test>
+
+</suite>
+```
+
+#### Base Test Class with Browser Parameter
+```java
+import org.testng.annotations.*;
+import com.microsoft.playwright.*;
+
+public class BaseTest {
+    protected Playwright playwright;
+    protected Browser browser;
+    protected BrowserContext context;
+    protected Page page;
+
+    @BeforeClass
+    @Parameters("browser")
+    public void setup(@Optional("chromium") String browserName) {
+        playwright = Playwright.create();
+
+        // Launch browser based on parameter
+        BrowserType.LaunchOptions launchOptions = new BrowserType.LaunchOptions()
+            .setHeadless(true);
+
+        switch (browserName.toLowerCase()) {
+            case "firefox":
+                browser = playwright.firefox().launch(launchOptions);
+                break;
+            case "webkit":
+                browser = playwright.webkit().launch(launchOptions);
+                break;
+            case "chromium":
+            default:
+                browser = playwright.chromium().launch(launchOptions);
+                break;
+        }
+    }
+
+    @BeforeMethod
+    public void createContext() {
+        context = browser.newContext();
+        page = context.newPage();
+    }
+
+    @AfterMethod
+    public void closeContext() {
+        if (context != null) {
+            context.close();
+        }
+    }
+
+    @AfterClass
+    public void teardown() {
+        if (browser != null) {
+            browser.close();
+        }
+        if (playwright != null) {
+            playwright.close();
+        }
+    }
+}
+```
+
+#### Test Class Example
+```java
+import org.testng.annotations.Test;
+import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
+
+public class LoginTest extends BaseTest {
+
+    @Test
+    public void testSuccessfulLogin() {
+        page.navigate("https://example.com/login");
+        page.fill("#username", "testuser");
+        page.fill("#password", "password123");
+        page.click("button[type='submit']");
+
+        assertThat(page).hasURL("https://example.com/dashboard");
+    }
+
+    @Test
+    public void testInvalidLogin() {
+        page.navigate("https://example.com/login");
+        page.fill("#username", "invalid");
+        page.fill("#password", "wrong");
+        page.click("button[type='submit']");
+
+        assertThat(page.locator(".error-message")).isVisible();
+    }
+}
+```
+
+#### Method-Level Parallel Execution
+```xml
+<!-- Execute methods in parallel instead of classes -->
+<suite name="Method Parallel Suite" parallel="methods" thread-count="5">
+    <test name="All Tests">
+        <classes>
+            <class name="com.example.tests.LoginTest"/>
+            <class name="com.example.tests.CheckoutTest"/>
+            <class name="com.example.tests.SearchTest"/>
+        </classes>
+    </test>
+</suite>
+```
+
+#### Data Provider for Multi-Browser Testing
+```java
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
+
+public class CrossBrowserTest {
+
+    @DataProvider(name = "browsers", parallel = true)
+    public Object[][] getBrowsers() {
+        return new Object[][] {
+            {"chromium"},
+            {"firefox"},
+            {"webkit"}
+        };
+    }
+
+    @Test(dataProvider = "browsers")
+    public void testAcrossBrowsers(String browserName) {
+        try (Playwright playwright = Playwright.create()) {
+            BrowserType browserType;
+            switch (browserName) {
+                case "firefox":
+                    browserType = playwright.firefox();
+                    break;
+                case "webkit":
+                    browserType = playwright.webkit();
+                    break;
+                default:
+                    browserType = playwright.chromium();
+            }
+
+            Browser browser = browserType.launch(new BrowserType.LaunchOptions().setHeadless(true));
+            Page page = browser.newPage();
+            page.navigate("https://playwright.dev/");
+
+            assertThat(page).hasTitle(Pattern.compile(".*Playwright"));
+
+            browser.close();
+        }
+    }
+}
+```
+
+### JUnit 5 Parallel Execution
+
+#### Dependencies (Maven)
+```xml
+<dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter</artifactId>
+    <version>5.10.0</version>
+    <scope>test</scope>
+</dependency>
+```
+
+#### junit-platform.properties
+```properties
+# Enable parallel execution
+junit.jupiter.execution.parallel.enabled=true
+
+# Set parallelization strategy
+junit.jupiter.execution.parallel.mode.default=concurrent
+junit.jupiter.execution.parallel.mode.classes.default=concurrent
+
+# Configure thread pool
+junit.jupiter.execution.parallel.config.strategy=fixed
+junit.jupiter.execution.parallel.config.fixed.parallelism=3
+```
+
+#### Parameterized Test with Multiple Browsers
+```java
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import com.microsoft.playwright.*;
+
+public class CrossBrowserJUnitTest {
+
+    @ParameterizedTest
+    @ValueSource(strings = {"chromium", "firefox", "webkit"})
+    void testLoginOnMultipleBrowsers(String browserName) {
+        try (Playwright playwright = Playwright.create()) {
+            Browser browser = launchBrowser(playwright, browserName);
+            BrowserContext context = browser.newContext();
+            Page page = context.newPage();
+
+            page.navigate("https://example.com/login");
+            page.fill("#username", "testuser");
+            page.fill("#password", "password123");
+            page.click("button[type='submit']");
+
+            assertThat(page).hasURL("https://example.com/dashboard");
+
+            context.close();
+            browser.close();
+        }
+    }
+
+    private Browser launchBrowser(Playwright playwright, String browserName) {
+        BrowserType.LaunchOptions options = new BrowserType.LaunchOptions().setHeadless(true);
+
+        switch (browserName.toLowerCase()) {
+            case "firefox":
+                return playwright.firefox().launch(options);
+            case "webkit":
+                return playwright.webkit().launch(options);
+            default:
+                return playwright.chromium().launch(options);
+        }
+    }
+}
+```
+
+#### Custom Annotation for Browser Testing
+```java
+import org.junit.jupiter.params.provider.ArgumentsSource;
+import java.lang.annotation.*;
+
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+@ArgumentsSource(BrowserArgumentsProvider.class)
+public @interface BrowserTest {
+    String[] browsers() default {"chromium", "firefox", "webkit"};
+}
+
+// Arguments Provider
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.params.provider.*;
+import java.util.stream.Stream;
+
+public class BrowserArgumentsProvider implements ArgumentsProvider {
+    @Override
+    public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
+        BrowserTest annotation = context.getRequiredTestMethod()
+            .getAnnotation(BrowserTest.class);
+
+        return Stream.of(annotation.browsers())
+            .map(Arguments::of);
+    }
+}
+
+// Usage
+@ParameterizedTest
+@BrowserTest(browsers = {"chromium", "firefox"})
+void testOnSpecificBrowsers(String browserName) {
+    // Test implementation
+}
+```
+
+#### Thread-Safe Browser Management
+```java
+import org.junit.jupiter.api.*;
+
+public class ThreadSafeBrowserTest {
+    private static final ThreadLocal<Playwright> playwrightThreadLocal = new ThreadLocal<>();
+    private static final ThreadLocal<Browser> browserThreadLocal = new ThreadLocal<>();
+    private static final ThreadLocal<BrowserContext> contextThreadLocal = new ThreadLocal<>();
+    private static final ThreadLocal<Page> pageThreadLocal = new ThreadLocal<>();
+
+    @BeforeEach
+    void setup() {
+        Playwright playwright = Playwright.create();
+        playwrightThreadLocal.set(playwright);
+
+        Browser browser = playwright.chromium().launch();
+        browserThreadLocal.set(browser);
+
+        BrowserContext context = browser.newContext();
+        contextThreadLocal.set(context);
+
+        Page page = context.newPage();
+        pageThreadLocal.set(page);
+    }
+
+    @AfterEach
+    void teardown() {
+        Page page = pageThreadLocal.get();
+        if (page != null) page.close();
+
+        BrowserContext context = contextThreadLocal.get();
+        if (context != null) context.close();
+
+        Browser browser = browserThreadLocal.get();
+        if (browser != null) browser.close();
+
+        Playwright playwright = playwrightThreadLocal.get();
+        if (playwright != null) playwright.close();
+
+        // Clean up thread locals
+        playwrightThreadLocal.remove();
+        browserThreadLocal.remove();
+        contextThreadLocal.remove();
+        pageThreadLocal.remove();
+    }
+
+    protected Page getPage() {
+        return pageThreadLocal.get();
+    }
+
+    @Test
+    void testExample() {
+        Page page = getPage();
+        page.navigate("https://example.com");
+        assertThat(page).hasTitle("Example Domain");
+    }
+}
+```
+
+## Allure Reporting
+
+### Dependencies
+
+#### Maven Dependencies
+```xml
+<!-- Allure TestNG -->
+<dependency>
+    <groupId>io.qameta.allure</groupId>
+    <artifactId>allure-testng</artifactId>
+    <version>2.24.0</version>
+</dependency>
+
+<!-- Allure JUnit 5 -->
+<dependency>
+    <groupId>io.qameta.allure</groupId>
+    <artifactId>allure-junit5</artifactId>
+    <version>2.24.0</version>
+</dependency>
+
+<!-- Allure Maven Plugin -->
+<build>
+    <plugins>
+        <plugin>
+            <groupId>io.qameta.allure</groupId>
+            <artifactId>allure-maven</artifactId>
+            <version>2.12.0</version>
+            <configuration>
+                <reportVersion>2.24.0</reportVersion>
+                <resultsDirectory>${project.build.directory}/allure-results</resultsDirectory>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
+```
+
+#### Gradle Dependencies
+```groovy
+plugins {
+    id 'io.qameta.allure' version '2.11.2'
+}
+
+dependencies {
+    // For TestNG
+    testImplementation 'io.qameta.allure:allure-testng:2.24.0'
+
+    // For JUnit 5
+    testImplementation 'io.qameta.allure:allure-junit5:2.24.0'
+}
+
+allure {
+    version = '2.24.0'
+    autoconfigure = true
+    aspectjweaver = true
+}
+```
+
+### Allure Annotations
+
+#### Basic Annotations
+```java
+import io.qameta.allure.*;
+import org.testng.annotations.Test;
+
+@Epic("E-commerce Platform")
+@Feature("User Authentication")
+public class LoginTests extends BaseTest {
+
+    @Test
+    @Story("Successful Login")
+    @Severity(SeverityLevel.CRITICAL)
+    @Description("Test verifies that user can login with valid credentials")
+    @Link(name = "User Story", url = "https://jira.example.com/US-123")
+    @Issue("BUG-456")
+    @TmsLink("TC-789")
+    public void testSuccessfulLogin() {
+        loginToApplication("validuser", "validpass");
+        verifyDashboardPage();
+    }
+
+    @Step("Login to application with username: {username}")
+    private void loginToApplication(String username, String password) {
+        page.navigate("https://example.com/login");
+        page.fill("#username", username);
+        page.fill("#password", password);
+        page.click("button[type='submit']");
+    }
+
+    @Step("Verify dashboard page is displayed")
+    private void verifyDashboardPage() {
+        assertThat(page).hasURL(Pattern.compile(".*dashboard"));
+    }
+}
+```
+
+#### Step Annotations
+```java
+import io.qameta.allure.Step;
+
+public class AllureSteps {
+    private final Page page;
+
+    public AllureSteps(Page page) {
+        this.page = page;
+    }
+
+    @Step("Navigate to URL: {url}")
+    public void navigateTo(String url) {
+        page.navigate(url);
+    }
+
+    @Step("Fill field {selector} with value: {value}")
+    public void fillField(String selector, String value) {
+        page.fill(selector, value);
+    }
+
+    @Step("Click on element: {selector}")
+    public void clickElement(String selector) {
+        page.click(selector);
+    }
+
+    @Step("Verify element {selector} is visible")
+    public void verifyElementVisible(String selector) {
+        assertThat(page.locator(selector)).isVisible();
+    }
+
+    @Step("Verify page title contains: {expectedTitle}")
+    public void verifyPageTitle(String expectedTitle) {
+        assertThat(page).hasTitle(Pattern.compile(".*" + expectedTitle + ".*"));
+    }
+}
+```
+
+### Attachments
+
+#### Screenshot Attachments
+```java
+import io.qameta.allure.Attachment;
+import io.qameta.allure.Step;
+
+public class AllureHelper {
+
+    @Attachment(value = "Screenshot: {name}", type = "image/png")
+    public static byte[] saveScreenshot(Page page, String name) {
+        return page.screenshot(new Page.ScreenshotOptions().setFullPage(true));
+    }
+
+    @Attachment(value = "Page Screenshot", type = "image/png")
+    public static byte[] takeScreenshot(Page page) {
+        return page.screenshot();
+    }
+
+    @Attachment(value = "Element Screenshot", type = "image/png")
+    public static byte[] takeElementScreenshot(Locator locator) {
+        return locator.screenshot();
+    }
+
+    @Attachment(value = "Page Source", type = "text/html")
+    public static String savePageSource(Page page) {
+        return page.content();
+    }
+
+    @Attachment(value = "Browser Console Logs", type = "text/plain")
+    public static String saveConsoleLogs(String logs) {
+        return logs;
+    }
+
+    @Attachment(value = "Video Recording", type = "video/webm")
+    public static byte[] saveVideo(Path videoPath) throws IOException {
+        return Files.readAllBytes(videoPath);
+    }
+}
+```
+
+#### Automatic Screenshot on Failure
+```java
+import org.testng.ITestListener;
+import org.testng.ITestResult;
+import io.qameta.allure.Attachment;
+
+public class AllureListener implements ITestListener {
+
+    @Override
+    public void onTestFailure(ITestResult result) {
+        Object testClass = result.getInstance();
+
+        // Get page from test instance
+        if (testClass instanceof BaseTest) {
+            Page page = ((BaseTest) testClass).page;
+            if (page != null) {
+                AllureHelper.saveScreenshot(page, "Failure Screenshot");
+                AllureHelper.savePageSource(page);
+            }
+        }
+    }
+
+    @Attachment(value = "Failure Screenshot", type = "image/png")
+    private byte[] saveScreenshotOnFailure(Page page) {
+        return page.screenshot(new Page.ScreenshotOptions().setFullPage(true));
+    }
+}
+
+// Add listener in testng.xml
+// <listeners>
+//     <listener class-name="com.example.AllureListener"/>
+// </listeners>
+```
+
+### Advanced Allure Features
+
+#### Categorization
+```java
+@Epic("E-commerce Platform")
+@Feature("Shopping Cart")
+@Story("Add Items to Cart")
+@Owner("QA Team")
+@Tag("smoke")
+@Tag("regression")
+public class ShoppingCartTest extends BaseTest {
+
+    @Test
+    @Severity(SeverityLevel.BLOCKER)
+    public void testAddItemToCart() {
+        // Test implementation
+    }
+}
+```
+
+#### Parameters in Report
+```java
+import io.qameta.allure.Allure;
+
+@Test
+public void testWithParameters() {
+    String browser = "Chrome";
+    String environment = "Staging";
+
+    Allure.parameter("Browser", browser);
+    Allure.parameter("Environment", environment);
+    Allure.parameter("Test Data", "user@example.com");
+
+    // Test steps
+}
+```
+
+#### Dynamic Steps
+```java
+import io.qameta.allure.Allure;
+
+@Test
+public void testDynamicSteps() {
+    Allure.step("Step 1: Navigate to login page", () -> {
+        page.navigate("https://example.com/login");
+    });
+
+    Allure.step("Step 2: Enter credentials", () -> {
+        page.fill("#username", "testuser");
+        page.fill("#password", "password");
+    });
+
+    Allure.step("Step 3: Click login button", () -> {
+        page.click("button[type='submit']");
+    });
+
+    Allure.step("Step 4: Verify successful login", () -> {
+        assertThat(page).hasURL(Pattern.compile(".*dashboard"));
+    });
+}
+```
+
+#### Environment Properties
+```properties
+# Create allure.properties or environment.properties in src/test/resources
+Browser=Chrome
+OS=Windows 10
+Environment=Staging
+API.Version=v2.0
+```
+
+#### Programmatic Environment Info
+```java
+import io.qameta.allure.Allure;
+
+@BeforeClass
+public void setEnvironmentInfo() {
+    Allure.addEnvironment("Browser", "Chromium");
+    Allure.addEnvironment("Browser Version", "120.0");
+    Allure.addEnvironment("OS", System.getProperty("os.name"));
+    Allure.addEnvironment("Java Version", System.getProperty("java.version"));
+    Allure.addEnvironment("Base URL", "https://example.com");
+}
+```
+
+### Generate and View Reports
+
+#### Maven Commands
+```bash
+# Run tests and generate Allure results
+mvn clean test
+
+# Generate Allure report
+mvn allure:report
+
+# Serve Allure report (opens in browser)
+mvn allure:serve
+
+# Generate report to specific directory
+mvn allure:report -Dallure.results.directory=target/allure-results
+```
+
+#### Gradle Commands
+```bash
+# Run tests
+./gradlew clean test
+
+# Generate Allure report
+./gradlew allureReport
+
+# Serve Allure report
+./gradlew allureServe
+```
+
+#### Allure CLI
+```bash
+# Install Allure CLI (macOS)
+brew install allure
+
+# Generate report from results directory
+allure generate target/allure-results --clean -o target/allure-report
+
+# Open report in browser
+allure open target/allure-report
+
+# Serve report
+allure serve target/allure-results
+```
+
+### Complete Test Example with Allure
+
+```java
+import io.qameta.allure.*;
+import org.testng.annotations.*;
+import com.microsoft.playwright.*;
+import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
+
+@Epic("E-commerce Application")
+@Feature("User Management")
+public class CompleteAllureTest extends BaseTest {
+
+    private AllureSteps steps;
+
+    @BeforeMethod
+    @Override
+    public void createContext() {
+        super.createContext();
+        steps = new AllureSteps(page);
+    }
+
+    @Test
+    @Story("User Registration")
+    @Severity(SeverityLevel.CRITICAL)
+    @Description("Verify new user can successfully register")
+    @Link(name = "Requirements", url = "https://docs.example.com/registration")
+    @Owner("John Doe")
+    @Tag("smoke")
+    @Tag("regression")
+    public void testUserRegistration() {
+        Allure.parameter("Test User", "newuser@example.com");
+        Allure.parameter("Browser", "Chromium");
+
+        steps.navigateTo("https://example.com/register");
+        AllureHelper.saveScreenshot(page, "Registration Page");
+
+        steps.fillField("#firstName", "John");
+        steps.fillField("#lastName", "Doe");
+        steps.fillField("#email", "john.doe@example.com");
+        steps.fillField("#password", "SecurePass123!");
+        steps.clickElement("button[type='submit']");
+
+        AllureHelper.saveScreenshot(page, "After Registration");
+
+        steps.verifyPageTitle("Welcome");
+        steps.verifyElementVisible(".success-message");
+    }
+
+    @AfterMethod
+    public void captureFailure(ITestResult result) {
+        if (result.getStatus() == ITestResult.FAILURE) {
+            AllureHelper.saveScreenshot(page, "Test Failure");
+            AllureHelper.savePageSource(page);
+        }
     }
 }
 ```
