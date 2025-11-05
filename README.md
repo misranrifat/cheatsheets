@@ -56,10 +56,10 @@ A comprehensive collection of cheatsheets for various development tools, technol
 
 ### Testing & Automation
 - [Cypress](src/cheatsheets/cypress.md)
-- [Karate API Testing](src/cheatsheets/karate-api.md)
 - [OCR](src/cheatsheets/ocr.md)
 - **Java Testing**
   - [Hamcrest](src/cheatsheets/java-hamcrest.md)
+  - [Karate API Testing](src/cheatsheets/karate-api.md)
   - [Playwright](src/cheatsheets/java-playwright.md)
   - [REST Assured](src/cheatsheets/java-rest-assured.md)
   - [Selenium](src/cheatsheets/java-selenium.md)
